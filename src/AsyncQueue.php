@@ -94,7 +94,6 @@ class AsyncQueue extends DatabaseQueue
 			'queue' => $this->getQueue($queue),
 			'payload' => $payload,
 			'attempts' => $attempts,
-			'reserved' => 1,
 			'reserved_at' => $this->getTime(),
 			'available_at' => $availableAt->getTimestamp(),
 			'created_at' => $this->getTime(),
