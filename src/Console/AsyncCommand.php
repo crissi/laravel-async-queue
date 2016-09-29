@@ -5,6 +5,7 @@ namespace Barryvdh\Queue\Console;
 use Barryvdh\Queue\AsyncQueue;
 use Illuminate\Console\Command;
 use Illuminate\Queue\Worker;
+use Illuminate\Queue\WorkerOptions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -77,7 +78,7 @@ class AsyncCommand extends Command
             $sleep = max($job->getDatabaseJob()->available_at - time(), 0);
             sleep($sleep);
 			return $this->worker->process(
-				$manager->getName($connectionName), $job
+				$manager->getName($connectionName), $job, new WorkerOptions
 			);
 		}
 
