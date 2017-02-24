@@ -85,22 +85,24 @@ class AsyncQueue extends DatabaseQueue
 
         return $id;
     }
-    
-    protected function pushToDatabase($delay, $queue, $payload, $attempts = 0)
+
+    protected function pushToDatabase($queue, $payload, $delay = 0, $attempts = 0)
 	{
-		$availableAt = $delay instanceof DateTime ? $delay : Carbon::now()->addSeconds($delay);
+
 
 		return $this->database->table($this->table)->insertGetId([
 			'queue' => $this->getQueue($queue),
 			'payload' => $payload,
 			'attempts' => $attempts,
-			'reserved' => 1,
-			'reserved_at' => $this->getTime(),
-			'available_at' => $availableAt->getTimestamp(),
-			'created_at' => $this->getTime(),
+			'reserved_at' => null,
+			'available_at' => $this->availableAt($delay),
+			'created_at' => $this->currentTime(),
 		]);
 	}
     
+
+
+
     /**
 	 * Get the next available job for the queue.
 	 *
@@ -116,7 +118,7 @@ class AsyncQueue extends DatabaseQueue
         if($job) {
             
 			return new DatabaseJob(
-				$this->container, $this, $job, $job->queue
+				$this->container, $this, $job, 'default', $job->queue
 			);
         }
 	}

@@ -8,6 +8,7 @@ use Illuminate\Queue\Worker;
 use Illuminate\Queue\WorkerOptions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
+use ReflectionClass;
 
 class AsyncCommand extends Command
 {
@@ -65,7 +66,14 @@ class AsyncCommand extends Command
      */
     protected function processJob($connectionName, $id, $options)
     {
-        $manager = $this->worker->getManager();
+
+        $myClassReflection = new ReflectionClass(
+            get_class($this->worker)
+        );
+        $privateManager = $myClassReflection->getProperty('manager');
+        $privateManager->setAccessible(true);
+        $manager = $privateManager->getValue($this->worker);
+
         $connection = $manager->connection($connectionName);
         
 		$job = $connection->getJobFromId($id);
@@ -75,8 +83,8 @@ class AsyncCommand extends Command
 		// we will "sleep" the worker for the specified number of seconds.
 		if ( ! is_null($job))
 		{
-            $sleep = max($job->getDatabaseJob()->available_at - time(), 0);
-            sleep($sleep);
+   /*         $sleep = max($job->getDatabaseJob()->available_at - time(), 0);
+            sleep($sleep);*/
 			return $this->worker->process(
 				$manager->getName($connectionName), $job, $options
 			);
